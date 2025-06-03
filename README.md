@@ -9,7 +9,7 @@ This framework provides an end-to-end solution for finding optimal hyperparamete
 ## Components
 
 - `run-opt.sh`: Main entry script that orchestrates the entire optimization pipeline
-- `bayesian-opt-yolo-fixed.py`: Implements Bayesian optimization to find optimal hyperparameters
+- `bayesian-opt-yolo.py`: Implements Bayesian optimization to find optimal hyperparameters
 - `iou-overlap-analyzer.py`: Evaluates model performance with detailed IoU analysis against a different annotated dataset
 - `train-final.py`: Trains the final model using the best discovered hyperparameters from all runs
 
