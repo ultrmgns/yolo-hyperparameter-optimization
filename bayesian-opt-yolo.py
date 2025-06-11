@@ -33,6 +33,7 @@ def objective(trial, args):
     train_args['epochs'] = args.epochs
     train_args['device'] = args.device
     train_args['project'] = args.project
+    train_args['fraction'] = args.fraction
     train_args['name'] = f'trial_{trial.number}'
     train_args['val'] = True  # Always validate during training
     
@@ -47,7 +48,7 @@ def objective(trial, args):
     # Add specific parameters you might want to tune
     train_args['batch'] = trial.suggest_categorical('batch', [4, 8, 16, 32])
     train_args['imgsz'] = trial.suggest_categorical('imgsz', [416, 512, 640, 768])
-    
+    train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radm", "rmsprop"])
     # Initialize the model
     try:
         # Use explicit model path from args directly
@@ -128,6 +129,7 @@ def main():
     parser.add_argument('--trials', type=int, default=20, help='Number of optimization trials')
     parser.add_argument('--workers', type=int, default=4, help='Number of dataloader workers')
     parser.add_argument('--device', type=str, default='0', help='CUDA device')
+    parser.add_argument('--fraction', type=float, default=1.0, help='Fraction of training data')
     parser.add_argument('--project', type=str, default='runs/bayesian_opt', help='Project directory')
     args = parser.parse_args()
     
