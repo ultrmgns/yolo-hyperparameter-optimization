@@ -48,14 +48,14 @@ def objective(trial, args):
     # Add specific parameters you might want to tune
     train_args['batch'] = trial.suggest_categorical('batch', [4, 8, 16, 32])
     train_args['imgsz'] = trial.suggest_categorical('imgsz', [416, 512, 640, 768])
-    train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radm", "rmsprop"])
+    train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radam", "rmsprop"])
     # Initialize the model
     try:
         # Use explicit model path from args directly
         model = YOLO(args.model)
         
         # Print model path being used for debugging
-        print(f"Loading model from: {args.model}")
+        print(f"Model: {args.model}, train_args: {train_args}")
         
         # Train the model with the sampled hyperparameters directly passed
         results = model.train(**train_args)
