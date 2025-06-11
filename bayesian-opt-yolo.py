@@ -55,7 +55,7 @@ def objective(trial, args):
         model = YOLO(args.model)
         
         # Print model path being used for debugging
-        print(f"Model: {args.model}, train_args: {train_args}")
+        print(f"Model: {args.model}")
         
         # Train the model with the sampled hyperparameters directly passed
         results = model.train(**train_args)
