@@ -12,17 +12,19 @@ from datetime import datetime
 
 # Default hyperparameter ranges - these will be passed directly to the YOLO train method
 DEFAULT_HYP_RANGES = {
-    'lr0': (0.001, 0.1),           # Initial learning rate
+    'lr0': (0.0000001, 0.1),           # Initial learning rate
     'momentum': (0.8, 0.99),       # SGD momentum
     'weight_decay': (0.0001, 0.001),  # Weight decay
     'hsv_h': (0.0, 0.1),           # HSV hue augmentation
     'hsv_s': (0.0, 0.9),           # HSV saturation augmentation
     'hsv_v': (0.0, 0.9),           # HSV value augmentation
-    'degrees': (0.0, 1.0),         # Rotation augmentation
+    'degrees': (0.0, 45.),         # Rotation augmentation
+    'bgr': (0.0, 0.9),
     'translate': (0.0, 0.2),       # Translation augmentation
-    'scale': (0.0, 0.9),           # Scale augmentation
+    'scale': (0.0, 0.75),           # Scale augmentation
     'fliplr': (0.0, 0.5),          # Horizontal flip probability
-    'lrf': (0.00001, 0.01)         # final learning rate
+    'lrf': (0.00001, 0.1),        # final learning rate
+    'dropout': (0., 0.7),        # dropout factor
 }
 
 def objective(trial, args):
@@ -51,6 +53,8 @@ def objective(trial, args):
     train_args['batch'] = trial.suggest_categorical('batch', [4, 8, 16, 32])
     train_args['imgsz'] = trial.suggest_categorical('imgsz', [416, 512, 640, 768])
     train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radam", "rmsprop"])
+
+    # train_args["classes"] = [4]
     # Initialize the model
     try:
         # Use explicit model path from args directly
@@ -81,10 +85,12 @@ def evaluate_best_model(best_trial, args):
         return None
     
     # Get the best hyperparameters
-    best_params = {
-        param: best_trial.params.get(param, (DEFAULT_HYP_RANGES[param][0] + DEFAULT_HYP_RANGES[param][1]) / 2)
-        for param in DEFAULT_HYP_RANGES
-    }
+    best_params = dict(best_trial.params)
+    
+    # best_params = {
+    #     param: best_trial.params.get(param, None) #(DEFAULT_HYP_RANGES[param][0] + DEFAULT_HYP_RANGES[param][1]) / 2)
+    #     for param in DEFAULT_HYP_RANGES
+    # }
     
     # Add specific parameters that were tuned
     batch_size = best_trial.params.get('batch', 16)
@@ -164,6 +170,7 @@ def main():
     
     # Save the best hyperparameters
     best_params = best_trial.params
+    print(f"best_params: {best_params}")
     best_hyp = {param: best_params.get(param, DEFAULT_HYP_RANGES[param][0]) 
                 for param in DEFAULT_HYP_RANGES}
     
