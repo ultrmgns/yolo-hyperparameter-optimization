@@ -154,7 +154,6 @@ model = YOLO('$MODEL')
 model.train(
     data='$DATA',
     epochs=100,
-    imgsz=640,
     device='$DEVICE',
     project='./final_model',
     **hyp  # Unpack hyperparameters as keyword arguments

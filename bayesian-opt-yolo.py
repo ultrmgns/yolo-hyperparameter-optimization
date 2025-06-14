@@ -9,6 +9,7 @@ import numpy as np
 from pathlib import Path
 from ultralytics import YOLO
 from datetime import datetime
+import pickle
 
 # Default hyperparameter ranges - these will be passed directly to the YOLO train method
 DEFAULT_HYP_RANGES = {
@@ -38,7 +39,7 @@ def objective(trial, args):
     train_args['device'] = args.device
     train_args['project'] = args.project
     train_args['fraction'] = args.fraction
-    train_args['name'] = f'trial_{trial.number}'
+    train_args['name'] = f'trial_{trial.number:04d}'
     train_args['val'] = True  # Always validate during training
     
     # Add hyperparameters that will be directly passed to train method
@@ -175,7 +176,7 @@ def main():
                 for param in DEFAULT_HYP_RANGES}
     
     with open('best_hyperparameters.yaml', 'w') as f:
-        yaml.dump(best_hyp, f)
+        yaml.dump(best_params, f)
 
     with open(f"study-{datetime.now().strftime('%Y%m%dT%H%M%S')}.pk", "wb") as f:
         pickle.dump(study, f)
