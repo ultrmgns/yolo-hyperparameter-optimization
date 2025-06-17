@@ -19,12 +19,16 @@ DEFAULT_HYP_RANGES = {
     'hsv_h': (0.0, 0.1),           # HSV hue augmentation
     'hsv_s': (0.0, 0.9),           # HSV saturation augmentation
     'hsv_v': (0.0, 0.9),           # HSV value augmentation
-    'degrees': (0.0, 45.),         # Rotation augmentation
+    'degrees': (0.0, 90.),         # Rotation augmentation
     'bgr': (0.0, 0.9),
     'translate': (0.0, 0.2),       # Translation augmentation
     'scale': (0.0, 0.75),           # Scale augmentation
     'fliplr': (0.0, 0.5),          # Horizontal flip probability
     'lrf': (0.00001, 0.1),        # final learning rate
+    "shear": (0, 90),              # shear
+    "copy_paste": (0, 0.5),
+    "cutmix": (0, 0,5),
+    "mixup": (0, 0.5),
     'dropout': (0., 0.7),        # dropout factor
 }
 
@@ -54,7 +58,7 @@ def objective(trial, args):
     train_args['batch'] = trial.suggest_categorical('batch', [4, 8, 16, 32])
     train_args['imgsz'] = trial.suggest_categorical('imgsz', [416, 512, 640, 768])
     train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radam", "rmsprop"])
-
+    train_args["patience"] = 5
     # train_args["classes"] = [4]
     # Initialize the model
     try:
