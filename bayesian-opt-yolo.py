@@ -22,7 +22,7 @@ DEFAULT_HYP_RANGES = {
     'degrees': (0.0, 90.),         # Rotation augmentation
     'bgr': (0.0, 0.9),
     'translate': (0.0, 0.2),       # Translation augmentation
-    'scale': (0.0, 0.75),           # Scale augmentation
+    'scale': (0.0, 0.95),           # Scale augmentation
     'fliplr': (0.0, 0.5),          # Horizontal flip probability
     'lrf': (0.00001, 0.1),        # final learning rate
     "shear": (0, 90),              # shear
@@ -30,6 +30,7 @@ DEFAULT_HYP_RANGES = {
     "cutmix": (0, 0,5),
     "mixup": (0, 0.5),
     'dropout': (0., 0.7),        # dropout factor
+    'box': (5, 15),
 }
 
 def objective(trial, args):

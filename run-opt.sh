@@ -192,7 +192,7 @@ else
   echo "========================================"
   echo "Results summary:"
   echo "- Best hyperparameters: ./best_hyperparameters.yaml"
-  echo "- Final model: $FINAL_MODEL"
+  echo "- Final model: $PWD/$FINAL_MODEL"
   echo "- Optimization visualizations: ./optimization_history.html"
 fi
 
