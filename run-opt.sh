@@ -13,6 +13,7 @@ MODEL="yolov12m.pt"
 EPOCHS=20
 TRIALS=20
 DEVICE="0"
+FRACTION=1.0
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -48,6 +49,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --fraction)
+	FRACTION="$2"
+	shift
+	shift
+	;;
     *)
       echo "Unknown option: $1"
       exit 1
@@ -110,9 +116,9 @@ if [ -n "$EXTERNAL_VAL_DATA" ]; then
     EXTERNAL_VAL_DATA="$(pwd)/$EXTERNAL_VAL_DATA"
     echo "Converted external validation path to absolute: $EXTERNAL_VAL_DATA"
   fi
-  python3 ../bayesian-opt-yolo.py --data "$DATA" --external-val-data "$EXTERNAL_VAL_DATA" --model "$MODEL" --epochs $EPOCHS --trials $TRIALS --device $DEVICE --project ./optimization_results
+  python3 ../bayesian-opt-yolo.py --data "$DATA" --external-val-data "$EXTERNAL_VAL_DATA" --model "$MODEL" --epochs $EPOCHS --trials $TRIALS --device $DEVICE --project ./optimization_results --fraction $FRACTION
 else
-  python3 ../bayesian-opt-yolo.py --data "$DATA" --model "$MODEL" --epochs $EPOCHS --trials $TRIALS --device $DEVICE --project ./optimization_results
+  python3 ../bayesian-opt-yolo.py --data "$DATA" --model "$MODEL" --epochs $EPOCHS --trials $TRIALS --device $DEVICE --project ./optimization_results --fraction $FRACTION
 fi
 
 # Check if optimization completed successfully
@@ -148,7 +154,6 @@ model = YOLO('$MODEL')
 model.train(
     data='$DATA',
     epochs=100,
-    imgsz=640,
     device='$DEVICE',
     project='./final_model',
     **hyp  # Unpack hyperparameters as keyword arguments
@@ -187,7 +192,7 @@ else
   echo "========================================"
   echo "Results summary:"
   echo "- Best hyperparameters: ./best_hyperparameters.yaml"
-  echo "- Final model: $FINAL_MODEL"
+  echo "- Final model: $PWD/$FINAL_MODEL"
   echo "- Optimization visualizations: ./optimization_history.html"
 fi
 

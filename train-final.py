@@ -25,7 +25,6 @@ print("\nStarting training with best hyperparameters...")
 model.train(
     data=DATA_PATH,
     epochs=100,
-    imgsz=640,
     device=DEVICE,
     project='./final_model',
     **hyp  # Unpack hyperparameters as keyword arguments

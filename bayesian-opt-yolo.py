@@ -8,19 +8,29 @@ import argparse
 import numpy as np
 from pathlib import Path
 from ultralytics import YOLO
+from datetime import datetime
+import pickle
 
 # Default hyperparameter ranges - these will be passed directly to the YOLO train method
 DEFAULT_HYP_RANGES = {
-    'lr0': (0.001, 0.1),           # Initial learning rate
+    'lr0': (0.0000001, 0.1),           # Initial learning rate
     'momentum': (0.8, 0.99),       # SGD momentum
     'weight_decay': (0.0001, 0.001),  # Weight decay
     'hsv_h': (0.0, 0.1),           # HSV hue augmentation
     'hsv_s': (0.0, 0.9),           # HSV saturation augmentation
     'hsv_v': (0.0, 0.9),           # HSV value augmentation
-    'degrees': (0.0, 1.0),         # Rotation augmentation
+    'degrees': (0.0, 90.),         # Rotation augmentation
+    'bgr': (0.0, 0.9),
     'translate': (0.0, 0.2),       # Translation augmentation
-    'scale': (0.0, 0.9),           # Scale augmentation
+    'scale': (0.0, 0.95),           # Scale augmentation
     'fliplr': (0.0, 0.5),          # Horizontal flip probability
+    'lrf': (0.00001, 0.1),        # final learning rate
+    "shear": (0, 90),              # shear
+    "copy_paste": (0, 0.5),
+    "cutmix": (0, 0,5),
+    "mixup": (0, 0.5),
+    'dropout': (0., 0.7),        # dropout factor
+    'box': (5, 15),
 }
 
 def objective(trial, args):
@@ -33,7 +43,8 @@ def objective(trial, args):
     train_args['epochs'] = args.epochs
     train_args['device'] = args.device
     train_args['project'] = args.project
-    train_args['name'] = f'trial_{trial.number}'
+    train_args['fraction'] = args.fraction
+    train_args['name'] = f'trial_{trial.number:04d}'
     train_args['val'] = True  # Always validate during training
     
     # Add hyperparameters that will be directly passed to train method
@@ -47,14 +58,16 @@ def objective(trial, args):
     # Add specific parameters you might want to tune
     train_args['batch'] = trial.suggest_categorical('batch', [4, 8, 16, 32])
     train_args['imgsz'] = trial.suggest_categorical('imgsz', [416, 512, 640, 768])
-    
+    train_args['optimizer'] = trial.suggest_categorical('optimizer', ["sgd", "adam", "adamw", "nadam", "radam", "rmsprop"])
+    train_args["patience"] = 5
+    # train_args["classes"] = [4]
     # Initialize the model
     try:
         # Use explicit model path from args directly
         model = YOLO(args.model)
         
         # Print model path being used for debugging
-        print(f"Loading model from: {args.model}")
+        print(f"Model: {args.model}")
         
         # Train the model with the sampled hyperparameters directly passed
         results = model.train(**train_args)
@@ -78,10 +91,12 @@ def evaluate_best_model(best_trial, args):
         return None
     
     # Get the best hyperparameters
-    best_params = {
-        param: best_trial.params.get(param, (DEFAULT_HYP_RANGES[param][0] + DEFAULT_HYP_RANGES[param][1]) / 2)
-        for param in DEFAULT_HYP_RANGES
-    }
+    best_params = dict(best_trial.params)
+    
+    # best_params = {
+    #     param: best_trial.params.get(param, None) #(DEFAULT_HYP_RANGES[param][0] + DEFAULT_HYP_RANGES[param][1]) / 2)
+    #     for param in DEFAULT_HYP_RANGES
+    # }
     
     # Add specific parameters that were tuned
     batch_size = best_trial.params.get('batch', 16)
@@ -128,6 +143,7 @@ def main():
     parser.add_argument('--trials', type=int, default=20, help='Number of optimization trials')
     parser.add_argument('--workers', type=int, default=4, help='Number of dataloader workers')
     parser.add_argument('--device', type=str, default='0', help='CUDA device')
+    parser.add_argument('--fraction', type=float, default=1.0, help='Fraction of training data')
     parser.add_argument('--project', type=str, default='runs/bayesian_opt', help='Project directory')
     args = parser.parse_args()
     
@@ -160,12 +176,16 @@ def main():
     
     # Save the best hyperparameters
     best_params = best_trial.params
+    print(f"best_params: {best_params}")
     best_hyp = {param: best_params.get(param, DEFAULT_HYP_RANGES[param][0]) 
                 for param in DEFAULT_HYP_RANGES}
     
     with open('best_hyperparameters.yaml', 'w') as f:
-        yaml.dump(best_hyp, f)
-    
+        yaml.dump(best_params, f)
+
+    with open(f"study-{datetime.now().strftime('%Y%m%dT%H%M%S')}.pk", "wb") as f:
+        pickle.dump(study, f)
+        
     print(f"\nBest hyperparameters saved to best_hyperparameters.yaml")
     
     # Evaluate the best model on the external validation dataset if provided
